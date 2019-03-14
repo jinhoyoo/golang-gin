@@ -114,16 +114,12 @@ func auth(c *gin.Context) {
 func authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		// Get the JWT token sting in Authorization header.
 		var header = c.Request.Header.Get("Authorization")
-
 		fmt.Println("auth : " + header)
-
 		var tokenString = header[7:]
-
-		// Parse takes the token string and a function for looking up the key. The latter is especially
-		// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
-		// head of the token to identify which key to use, but the parsed token (head and claims) is provided
-		// to the callback, providing flexibility.
+		
+		// Parse and validate JWT token.
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// Don't forget to validate the alg is what you expect:
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
