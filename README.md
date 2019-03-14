@@ -1,21 +1,36 @@
-# Build a Golang app with the Gin framework, and authenticate with Auth0 + JWT
+# Build a Golang app with the Gin framework, and authenticate with JWT
 
-This repo contains the code samples for the [Build a Golang app with the Gin framework, and authenticate with Auth0 + JWT ](https://hakaselogs.me/2018-04-20/building-a-web-app-with-go-gin-and-react) article.
+Based on the [Build a Golang app with the Gin framework, and authenticate with Auth0 + JWT ](https://hakaselogs.me/2018-04-20/building-a-web-app-with-go-gin-and-react) article, Implemented the example of Go back-end and React front-end. __It's THE JUST PROTOTYPE OF JWT Token management in go and react.__
 
 ## Setup
 
-1. Update the `main.go` file with your Auth0 Credentials. [Sign up](https://auth0.com) for an account for free if you don't have one.
-2. Update the `views/app.jsx` file with your Auth0 Credentials.
-3. Add `http://localhost:3000` to your Allowed Callback, and Allowed Logout URL's in your [Auth0 Management Dashboard](https://manage.auth0.com).
-4. Run `mv .env.sample .env` and update with valid credentials
-5. Source the environment variables - `source .env`
-6. Update dependencies `go get`
-7. Launch the application by running `go run main.go`
-8. Navigate to `localhost:3000` to view the application
+1. Run `mv .env.sample .env` and update with valid credentials.
+
+``` bash
+export USER_ID="admin"
+export USER_PASSWORD="14123123"
+```
+
+2. Source the environment variables - `source .env`
+3. Pull the dependencies.
+
+``` bash
+$ go mod init
+$ go get 
+```
+4. Run the project
+```
+$ go run main.go
+```
 
 ## Author
-[Francis Sunday](https://twitter.com/codehakase)
+* [Archer Yoo](https://jinhoyoo.github.io/)
+* [Francis Sunday](https://twitter.com/codehakase) 
 
 ## License
 
 This project is licensed under the MIT license. See the [LICENSE](LICENSE) file for more info.
+
+## Thanks
+
+My colleagues, [bkmoon318](https://github.com/bkmoon318) and [DooSikChoi](https://github.com/DooSikChoi). 

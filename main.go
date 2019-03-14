@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -44,9 +45,9 @@ var jokes = []Joke{
 	Joke{12, 0, "Why don't skeletons ever go trick or treating? Because they have no body to go with."},
 }
 
-// Predefined ID and password.
-var authID = "admin"
-var authPassword = "14123123"
+// Predefined ID and password. (THIS IS THE PROTOTYPE.)
+var authID = os.Getenv("USER_ID")
+var authPassword = os.Getenv("USER_PASSWORD")
 
 func main() {
 
