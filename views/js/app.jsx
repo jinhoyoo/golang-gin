@@ -1,10 +1,21 @@
-const AUTH0_CLIENT_ID = "aIAOt9fkMZKrNsSsFqbKj5KTI0ObTDPP";
-const AUTH0_DOMAIN = "hakaselabs.auth0.com";
-const AUTH0_CALLBACK_URL = location.href;
-const AUTH0_API_AUDIENCE = "golang-gin";
+
+const AUTH_ID="admin"
+const AUTH_PASSWORD="14123123"
+
 
 class App extends React.Component {
   parseHash() {
+
+    // Read JWT token from local strage. 
+
+    // Validate whether JWT Token is available or not from server. 
+
+    // If available JWT then go to home. 
+
+    // Or close.
+
+
+    /*
     this.auth0 = new auth0.WebAuth({
       domain: AUTH0_DOMAIN,
       clientID: AUTH0_CLIENT_ID
@@ -30,7 +41,8 @@ class App extends React.Component {
         );
       }
     });
-  }
+    */
+  }ww
 
   setup() {
     $.ajaxSetup({
@@ -46,7 +58,7 @@ class App extends React.Component {
   }
 
   setState() {
-    let idToken = localStorage.getItem("id_token");
+    let idToken = localStorage.getItem("access_token");
     if (idToken) {
       this.loggedIn = true;
     } else {
@@ -74,25 +86,69 @@ class Home extends React.Component {
     this.authenticate = this.authenticate.bind(this);
   }
   authenticate() {
-    this.WebAuth = new auth0.WebAuth({
-      domain: AUTH0_DOMAIN,
-      clientID: AUTH0_CLIENT_ID,
-      scope: "openid profile",
-      audience: AUTH0_API_AUDIENCE,
-      responseType: "token id_token",
-      redirectUri: AUTH0_CALLBACK_URL
-    });
-    this.WebAuth.authorize();
+    // this.WebAuth = new auth0.WebAuth({
+    //   domain: AUTH0_DOMAIN,
+    //   clientID: AUTH0_CLIENT_ID,
+    //   scope: "openid profile",
+    //   audience: AUTH0_API_AUDIENCE,
+    //   responseType: "token id_token",
+    //   redirectUri: AUTH0_CALLBACK_URL
+    // });
+    // this.WebAuth.authorize();
+
+    this.serverRequest();
+
   }
 
+  serverRequest() {
+    var id = document.getElementById("id").value;
+    var password = document.getElementById("password").value;
+
+    fetch('http://localhost:3000/api/auth/', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: id,
+        password: password,
+      })
+    })
+    .then( (response) => {
+      if (response.status != 200) {
+        console.log('Looks like there was a problem. Status Code: ' +
+          response.status);
+        alert(response.status)
+        return null;
+      }
+      return response.json() })
+    .then( (responseJson) => {
+      if (responseJson != null) {
+        localStorage.setItem("access_token", responseJson.token);
+      }
+      location.reload();
+      return;
+    } )
+  }
+  
   render() {
     return (
       <div className="container">
         <div className="row">
-          <div className="col-xs-8 col-xs-offset-2 jumbotron text-center">
-            <h1>Jokeish</h1>
-            <p>A load of Dad jokes XD</p>
+          <div className="col-xs-4 col-xs-offset-4 jumbotron text-center">
+            <h1>Mbears</h1>
+            <br /><br /><br />
             <p>Sign in to get access </p>
+            <br />
+            <div className="form-group has-feedback">
+              <input type="text" name="id" id="id" size="36" placeholder="ID"/>
+              <span className="glyphicon glyphicon-envelope form-control-feedback"></span>
+            </div>
+            <div className="form-group has-feedback">
+              <input type="password" name="password" id="password" size="36" placeholder="Password"/>
+              <span className="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
             <a
               onClick={this.authenticate}
               className="btn btn-primary btn-lg btn-login btn-block"
@@ -118,9 +174,7 @@ class LoggedIn extends React.Component {
   }
 
   logout() {
-    localStorage.removeItem("id_token");
     localStorage.removeItem("access_token");
-    localStorage.removeItem("profile");
     location.reload();
   }
 

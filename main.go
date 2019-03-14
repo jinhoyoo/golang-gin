@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	jwt "github.com/dgrijalva/jwt-go"
@@ -38,6 +39,15 @@ type Joke struct {
 	Joke  string `json:"joke" binding:"required"`
 }
 
+type LOGIN struct {
+	ID       string `json:"id" binding:"required"`
+	PASSWORD string `json:"password" binding:"required"`
+}
+
+type JWTtoken struct {
+	TOKEN string `json:"token" binding:"required"`
+}
+
 /** we'll create a list of jokes */
 var jokes = []Joke{
 	Joke{1, 0, "Did you hear about the restaurant on the moon? Great food, no atmosphere."},
@@ -55,6 +65,10 @@ var jokes = []Joke{
 }
 
 var jwtMiddleWare *jwtmiddleware.JWTMiddleware
+
+// Predefined ID and password.
+var authID = "admin"
+var authPassword = "14123123"
 
 func main() {
 	jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
@@ -98,9 +112,48 @@ func main() {
 		})
 		api.GET("/jokes", authMiddleware(), JokeHandler)
 		api.POST("/jokes/like/:jokeID", authMiddleware(), LikeJoke)
+		api.POST("/auth", auth)
 	}
 	// Start the app
 	router.Run(":3000")
+}
+
+func auth(c *gin.Context) {
+
+	var login LOGIN
+	c.BindJSON(&login)
+
+	// To-Do: Check ID and password is right or not.
+	if authID != login.ID {
+		c.Header("Content-Type", "application/json")
+		c.JSON(http.StatusBadRequest, "")
+		return
+	}
+	if authPassword != login.PASSWORD {
+		c.Header("Content-Type", "application/json")
+		c.JSON(http.StatusBadRequest, "")
+		return
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user":      login.ID,
+		"timestamp": int32(time.Now().Unix()),
+	})
+
+	// Sign and get the complete encoded token as a string using the secret.
+	tokenString, err := token.SignedString([]byte(login.PASSWORD))
+
+	if err != nil {
+		log.Fatal("Faile to generate signed string.")
+	}
+
+	fmt.Println("user : " + login.ID + " / " + "pw : " + login.PASSWORD + "/" + "token string:" + tokenString)
+
+	var jwtToken JWTtoken
+	jwtToken = JWTtoken{tokenString}
+
+	c.Header("Content-Type", "application/json")
+	c.JSON(http.StatusOK, jwtToken)
 }
 
 func getPemCert(token *jwt.Token) (string, error) {
@@ -135,16 +188,50 @@ func getPemCert(token *jwt.Token) (string, error) {
 // authMiddleware intercepts the requests, and check for a valid jwt token
 func authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get the client secret key
-		err := jwtMiddleWare.CheckJWT(c.Writer, c.Request)
-		if err != nil {
-			// Token not found
+
+		var header = c.Request.Header.Get("Authorization")
+
+		fmt.Println("auth : " + header)
+
+		var tokenString = header[7:]
+
+		// Parse takes the token string and a function for looking up the key. The latter is especially
+		// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
+		// head of the token to identify which key to use, but the parsed token (head and claims) is provided
+		// to the callback, providing flexibility.
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Don't forget to validate the alg is what you expect:
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+
+			// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+			return []byte(authPassword), nil
+		})
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			fmt.Println(claims["user"], claims["timestamp"])
+		} else {
 			fmt.Println(err)
 			c.Abort()
 			c.Writer.WriteHeader(http.StatusUnauthorized)
 			c.Writer.Write([]byte("Unauthorized"))
 			return
 		}
+
+		//
+		// Get the client secret key
+		/*
+			err := jwtMiddleWare.CheckJWT(c.Writer, c.Request)
+			if err != nil {
+				// Token not found
+				fmt.Println(err)
+				c.Abort()
+				c.Writer.WriteHeader(http.StatusUnauthorized)
+				c.Writer.Write([]byte("Unauthorized"))
+				return
+			}
+		*/
 	}
 }
 
@@ -155,6 +242,7 @@ func JokeHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, jokes)
 }
 
+// LikeJoke ...
 func LikeJoke(c *gin.Context) {
 	// Check joke ID is valid
 	if jokeid, err := strconv.Atoi(c.Param("jokeID")); err == nil {
