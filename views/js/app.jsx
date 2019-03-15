@@ -4,45 +4,6 @@ const AUTH_PASSWORD="14123123"
 
 
 class App extends React.Component {
-  parseHash() {
-
-    // Read JWT token from local strage. 
-
-    // Validate whether JWT Token is available or not from server. 
-
-    // If available JWT then go to home. 
-
-    // Or close.
-
-
-    /*
-    this.auth0 = new auth0.WebAuth({
-      domain: AUTH0_DOMAIN,
-      clientID: AUTH0_CLIENT_ID
-    });
-    this.auth0.parseHash(window.location.hash, (err, authResult) => {
-      if (err) {
-        return console.log(err);
-      }
-      if (
-        authResult !== null &&
-        authResult.accessToken !== null &&
-        authResult.idToken !== null
-      ) {
-        localStorage.setItem("access_token", authResult.accessToken);
-        localStorage.setItem("id_token", authResult.idToken);
-        localStorage.setItem(
-          "profile",
-          JSON.stringify(authResult.idTokenPayload)
-        );
-        window.location = window.location.href.substr(
-          0,
-          window.location.href.indexOf("#")
-        );
-      }
-    });
-    */
-  }ww
 
   setup() {
     $.ajaxSetup({
@@ -68,7 +29,6 @@ class App extends React.Component {
 
   componentWillMount() {
     this.setup();
-    this.parseHash();
     this.setState();
   }
 
